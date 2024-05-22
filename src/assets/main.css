@@ -1,5 +1,11 @@
 @import './base.css';
 
 #app {
+    color: #2c3e50;
+    font-family: Roboto, sans-serif;
+}
 
+ul li
+{
+    list-style-type: none;
 }

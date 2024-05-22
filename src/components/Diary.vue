@@ -1,20 +1,37 @@
 <script setup>
-import {ref} from "vue";
+import {computed, ref} from "vue";
+import AddDiaryEntry from "@/components/AddDiaryEntry.vue";
 
-const diaryEntries = ref(
-    [
-      {id: 1, title: 'Entry 1', content: 'some text', mood: 'happy', timeCreated: '2024-05-12T12:16:48.642264Z'},
-      {id: 2, title: 'Entry 2', content: 'some more text', mood: 'sunny', timeCreated: '2024-05-12T12:16:48.642264Z'},
-      {id: 3, title: 'Entry 3', content: 'other text', mood: 'yummy', timeCreated: '2024-05-12T12:16:48.642264Z'},
-    ]
-)
+const diaryEntries = ref([
+  {id: 2, title: "Title 1", content: "This is some test content", mood: '😃', timeCreated: Date.now()},
+  {id: 3, title: "Title 2", content: "This is some more test content within the second test item", mood: '🤣', timeCreated: Date.now()}
+])
+
+const transformedEntries = computed(() => {
+  return diaryEntries.value.map(item => {
+    return {
+      ...item,
+      timeCreated: new Date(item.timeCreated).toLocaleString(),
+    };
+  });
+});
+
+function handleNewDiaryEntry(newDiaryEntry){
+  diaryEntries.value.push(newDiaryEntry);
+}
+
 </script>
 
 <template>
-    <div>
-      <ul class="diaryList">
-        <li v-for="entry in diaryEntries" :key="entry.id"  class="diaryListItem">
-          <h2 class = "listHeading">{{entry.title}}</h2>
+    <div class="diaryList">
+      <AddDiaryEntry @pass-new-diary-entry="handleNewDiaryEntry"/>
+      <ul>
+        <li v-for="entry in transformedEntries" :key="entry.timeCreated" class="diaryListItem">
+          <div class = "tileTitle">
+            <span v-html="entry.mood" class = "emojiHeading"></span>
+            <h2 class = "listHeading">{{entry.title}}</h2>
+          </div>
+            <span class = "listDate">{{entry.timeCreated}}</span>
           <p class = "listContent">{{entry.content}}</p>
         </li>
       </ul>
@@ -29,25 +46,42 @@ const diaryEntries = ref(
 }
 
 .diaryListItem{
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
   background-color: rgba(255, 226, 124, 0.39);
   margin: 5px;
   border-radius: 5px;
+  min-height: 100px;
+  max-height: 100px;
+  width: 100%;
+}
+
+.tileTitle{
+  display: flex;
+}
+
+.emojiHeading{
+  font-size: 30px;
 }
 
 .listHeading{
-  color: #2c3e50;
-  padding: 10px 0px 0px 10px;
+  margin: 0;
 }
 
 .listContent{
-  color: #2c3e50;
-  padding: 10px 0px 10px 10px;
+  width: 100%;
+  margin: 0;
 }
 
-ul li
-{
-  list-style-type: none;
-  font-family: Helvetica;
+.listDate{
+}
+
+
+ul {
+  margin: 0;
+  padding: 0;
 }
 
 </style>
