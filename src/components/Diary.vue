@@ -1,51 +1,59 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed, onMounted, ref} from "vue";
 import AddDiaryEntry from "@/components/AddDiaryEntry.vue";
+import axios from "axios";
 
-const diaryEntries = ref([
-  {id: 2, title: "Title 1", content: "This is some test content", mood: '😃', timeCreated: Date.now()},
-  {id: 3, title: "Title 2", content: "This is some more test content within the second test item", mood: '🤣', timeCreated: Date.now()}
-])
+const diaryEntries = ref([])
 
 const transformedEntries = computed(() => {
   return diaryEntries.value.map(item => {
     return {
       ...item,
-      timeCreated: new Date(item.timeCreated).toLocaleString(),
+      timeCreated: new Date(parseInt(item.timeCreated)).toLocaleString(),
     };
   });
 });
 
-function handleNewDiaryEntry(newDiaryEntry){
-  diaryEntries.value.push(newDiaryEntry);
+onMounted(fetchDiaryEntries);
+
+async function fetchDiaryEntries() {
+  try {
+    const response = await axios.get('http://localhost:8080/rhythmnotes/all');
+    diaryEntries.value = response.data;
+  } catch (error) {
+    console.error('Error fetching diary entries:', error);
+  }
 }
 
+function handleNewDiaryEntry() {
+  fetchDiaryEntries()
+}
 </script>
 
 <template>
-    <div class="diaryList">
-      <AddDiaryEntry @pass-new-diary-entry="handleNewDiaryEntry"/>
-      <ul>
-        <li v-for="entry in transformedEntries" :key="entry.timeCreated" class="diaryListItem">
-          <div class = "tileTitle">
-            <span v-html="entry.mood" class = "emojiHeading"></span>
-            <h2 class = "listHeading">{{entry.title}}</h2>
-          </div>
-            <span class = "listDate">{{entry.timeCreated}}</span>
-          <p class = "listContent">{{entry.content}}</p>
-        </li>
-      </ul>
-    </div>
+  <div class="diaryList">
+    <AddDiaryEntry @new-diary-entry-added="handleNewDiaryEntry"/>
+    <ul>
+      <li v-for="entry in transformedEntries" :key="entry.timeCreated" class="diaryListItem">
+        <div class="tileTitle">
+          <span v-html="entry.mood" class="emojiHeading"></span>
+          <h2 class="listHeading">{{ entry.title }}</h2>
+        </div>
+        <span class="listDate">{{ entry.timeCreated }}</span>
+        <p class="listContent">{{ entry.content }}</p>
+      </li>
+    </ul>
+  </div>
 </template>
 
 <style scoped>
 
-.diaryList{
+.diaryList {
   width: 30%;
   margin: 0 auto;
 }
 
-.diaryListItem{
+.diaryListItem {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
@@ -58,24 +66,24 @@ function handleNewDiaryEntry(newDiaryEntry){
   width: 100%;
 }
 
-.tileTitle{
+.tileTitle {
   display: flex;
 }
 
-.emojiHeading{
+.emojiHeading {
   font-size: 30px;
 }
 
-.listHeading{
+.listHeading {
   margin: 0;
 }
 
-.listContent{
+.listContent {
   width: 100%;
   margin: 0;
 }
 
-.listDate{
+.listDate {
 }
 
 

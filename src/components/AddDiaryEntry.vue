@@ -3,11 +3,12 @@
 import {ref, toRaw} from "vue";
 import EmojiSelector from "@/components/EmojiSelector.vue";
 import { v4 as uuidv4 } from 'uuid';
+import axios from 'axios';
 
-const emit = defineEmits(['passNewDiaryEntry']);
+const emit = defineEmits(['newDiaryEntryAdded']);
 
 const hideForm = ref(false);
-const newDiaryEntry = ref({id: 1, title: "", content: "", mood: null, timeCreated: null});
+const newDiaryEntry = ref({title: "", content: "", mood: null, timeCreated: null});
 
 function handleEmoji(emoji){
   newDiaryEntry.value.mood = emoji;
@@ -15,10 +16,15 @@ function handleEmoji(emoji){
 
 function submit(){
   if (newDiaryEntry.value.title.trim() === '') return;
-  newDiaryEntry.value.id = uuidv4();
-  newDiaryEntry.value.timeCreated = Date.now();
+  newDiaryEntry.value.timeCreated = Date.now().toString();
   const diaryEntryCopy = structuredClone(toRaw(newDiaryEntry.value));
-  emit('passNewDiaryEntry', diaryEntryCopy);
+
+  axios.post('http://localhost:8080/rhythmnotes/add', diaryEntryCopy).then(
+    response => {
+      emit('newDiaryEntryAdded');
+    }).catch(error => {
+    console.log(error)
+  })
   newDiaryEntry.value.title = "";
   newDiaryEntry.value.content = "";
 }
