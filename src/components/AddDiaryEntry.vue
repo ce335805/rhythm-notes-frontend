@@ -14,9 +14,16 @@ function handleEmoji(emoji){
   newDiaryEntry.value.mood = emoji;
 }
 
+function autoExpand(event){
+  const textarea = event.target;
+  textarea.style.height = 'auto';
+  textarea.style.height = textarea.scrollHeight + 6 + 'px';
+}
+
 function submit(){
   if (newDiaryEntry.value.title.trim() === '') return;
   newDiaryEntry.value.timeCreated = Date.now().toString();
+  newDiaryEntry.value.content = newDiaryEntry.value.content.replace(/\n/g, '\\n');
   const diaryEntryCopy = structuredClone(toRaw(newDiaryEntry.value));
 
   axios.post('http://localhost:8080/rhythmnotes/add', diaryEntryCopy).then(
@@ -27,7 +34,16 @@ function submit(){
   })
   newDiaryEntry.value.title = "";
   newDiaryEntry.value.content = "";
+  resetTextareaHeight();
 }
+
+function resetTextareaHeight() {
+  const textarea = this.$refs.textarea;
+  textarea.style.height = 'auto';
+  textarea.style.height = `${textarea.scrollHeight}px`;
+  textarea.rows = 2;
+}
+
 </script>
 
 <template>
@@ -38,7 +54,7 @@ function submit(){
       <input v-model="newDiaryEntry.title" placeholder="title" type="text" class = "titleInput" />
       <EmojiSelector @pass-emoji="handleEmoji" />
     </div>
-    <input v-model="newDiaryEntry.content" placeholder="content" type="text" class = "contentInput" />
+    <textarea @input="autoExpand" v-model="newDiaryEntry.content" placeholder="content" type="text" class = "contentInput" ref="textarea"/>
     <button @click="submit" class = "submitButton">Submit</button>
   </div>
   <div v-if="hideForm" class = "plusSign">
@@ -56,14 +72,15 @@ function submit(){
 
 .titleInput{
   display: block;
-  padding: 3px 2px;
+  padding: 3px 3px;
   margin: 5px 2px;
 }
 .contentInput{
   display: block;
-  padding: 3px 2px;
+  padding: 3px 3px;
   margin: 5px 2px;
-  width: 90%;
+  width: 100%;
+  resize: none;
 }
 
 .submitButton{
@@ -75,7 +92,8 @@ function submit(){
 }
 
 .addEntryTile{
-  margin: 5px;
+  margin: 5px 0;
+  padding: 5px 5px;
   background-color: rgba(255, 226, 124, 0.39);
   width: 100%;
   min-height: 100px;
